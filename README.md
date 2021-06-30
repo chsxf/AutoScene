@@ -1,3 +1,5 @@
+[![openupm](https://img.shields.io/npm/v/dev.chsxf.autoscene?label=openupm&registry_uri=https://package.openupm.com)](https://openupm.com/packages/dev.chsxf.autoscene/)
+
 # ❓ About AutoScene
 
 AutoScene allows you to work on your scene setup in the editor while loading a specific scene when entering Play mode.
