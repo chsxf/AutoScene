@@ -1,36 +1,17 @@
-﻿using UnityEngine;
-using UnityEditor;
+﻿using UnityEditor;
 using UnityEditor.SceneManagement;
 using System;
-using System.IO;
 
 namespace chsxf
 {
     [InitializeOnLoad]
     public static class AutoScene
     {
-        private const string VERSION = "1.1.0";
-
-        private static string ProjectPath {
-            get {
-                string assetsPath = Application.dataPath;
-                return Directory.GetParent(assetsPath).FullName;
-            }
-        }
-
-        private static string PrefsKey {
-            get { return ProjectPath + ".AutoScene"; }
-        }
-
-        private static string PrefsKeyEnabled {
-            get { return PrefsKey + ".enabled"; }
-        }
-
-        private static bool Enabled {
-            get { return EditorPrefs.GetBool(PrefsKeyEnabled, true); }
-        }
+        private static AutoSceneSettings settings = null;
 
         static AutoScene() {
+            settings = AutoSceneSettings.LoadSettings();
+
             EditorBuildSettings.sceneListChanged += UpdatePlayModeStartScene;
             UpdatePlayModeStartScene();
         }
@@ -38,9 +19,8 @@ namespace chsxf
         private static void UpdatePlayModeStartScene() {
             SceneAsset sceneAsset = null;
 
-            if (Enabled) {
-                string value = EditorPrefs.GetString(PrefsKey, "none");
-                if (value == "auto") {
+            if (settings.Enabled) {
+                if (settings.LoadedScene == "auto") {
                     foreach (EditorBuildSettingsScene scene in EditorBuildSettings.scenes) {
                         if (scene.enabled) {
                             sceneAsset = AssetDatabase.LoadAssetAtPath<SceneAsset>(scene.path);
@@ -48,41 +28,40 @@ namespace chsxf
                         }
                     }
                 }
-                else if (value != "none") {
-                    sceneAsset = AssetDatabase.LoadAssetAtPath<SceneAsset>(value);
+                else if (settings.LoadedScene != "none") {
+                    sceneAsset = AssetDatabase.LoadAssetAtPath<SceneAsset>(settings.LoadedScene);
                 }
             }
 
             EditorSceneManager.playModeStartScene = sceneAsset;
         }
 
-        [MenuItem("Tools/AutoScene/Disable")]
+        [MenuItem("Tools/AutoScene (" + AutoSceneSettings.VERSION + ")/Disable")]
         private static void DisableAutoScene() {
-            EditorPrefs.SetBool(PrefsKeyEnabled, false);
+            settings.Enabled = false;
             UpdatePlayModeStartScene();
         }
 
-        [MenuItem("Tools/AutoScene/Disable", true)]
+        [MenuItem("Tools/AutoScene (" + AutoSceneSettings.VERSION + ")/Disable", true)]
         private static bool CanDisableAutoScene() {
-            return Enabled;
+            return settings.Enabled;
         }
 
-        [MenuItem("Tools/AutoScene/Enable")]
+        [MenuItem("Tools/AutoScene (" + AutoSceneSettings.VERSION + ")/Enable")]
         private static void EnableAutoScene() {
-            EditorPrefs.SetBool(PrefsKeyEnabled, true);
+            settings.Enabled = true;
             UpdatePlayModeStartScene();
         }
 
-        [MenuItem("Tools/AutoScene/Enable", true)]
+        [MenuItem("Tools/AutoScene (" + AutoSceneSettings.VERSION + ")/Enable", true)]
         private static bool CanEnableAutoScene() {
-            return !Enabled;
+            return !settings.Enabled;
         }
 
         [PreferenceItem("AutoScene")]
         public static void AutoScenePreferences() {
-            string prefsValue = EditorPrefs.GetString(PrefsKey, "none");
 
-            EditorGUILayout.LabelField("Version", VERSION, EditorStyles.boldLabel);
+            EditorGUILayout.LabelField("Version", AutoSceneSettings.VERSION, EditorStyles.boldLabel);
             EditorGUILayout.Space();
 
             // Build scene list
@@ -94,6 +73,7 @@ namespace chsxf
             Array.Sort(scenePathes, string.Compare);
 
             // Finding selected index
+            string prefsValue = settings.LoadedScene;
             int selectedIndex = 0;
             if (prefsValue == "auto") {
                 selectedIndex = 1;
@@ -112,7 +92,7 @@ namespace chsxf
 
             EditorGUI.BeginChangeCheck();
             
-            bool enabled = Enabled;
+            bool enabled = settings.Enabled;
             enabled = EditorGUILayout.Toggle("Enable AutoScene", enabled);
             EditorGUILayout.Space();
 
@@ -129,8 +109,8 @@ namespace chsxf
                     prefsValue = menuEntries[selectedIndex];
                 }
 
-                EditorPrefs.SetString(PrefsKey, prefsValue);
-                EditorPrefs.SetBool(PrefsKeyEnabled, enabled);
+                settings.LoadedScene = prefsValue;
+                settings.Enabled = enabled;
                 UpdatePlayModeStartScene();
             }
 
