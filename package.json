@@ -1,6 +1,6 @@
 {
   "name": "chsxf.autoscene",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "displayName": "AutoScene",
   "description": "AutoScene allows you to work on your Unity scene setup in the editor while loading a specific scene when entering Play mode.",
   "unity": "2018.4",
