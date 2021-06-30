@@ -1,6 +1,7 @@
 ﻿using UnityEditor;
 using UnityEditor.SceneManagement;
 using System;
+using System.Collections.Generic;
 
 namespace chsxf
 {
@@ -58,77 +59,83 @@ namespace chsxf
             return !settings.Enabled;
         }
 
-        [PreferenceItem("AutoScene")]
-        public static void AutoScenePreferences() {
+        [SettingsProvider]
+        public static SettingsProvider AutoSceneSettingsProvider() {
+            SettingsProvider provider = new SettingsProvider("AutoScene", SettingsScope.User) {
+                keywords = new HashSet<string>(new[] { "scene", "autoscene", "play mode" }),
 
-            EditorGUILayout.LabelField("Version", AutoSceneSettings.VERSION, EditorStyles.boldLabel);
-            EditorGUILayout.Space();
+                guiHandler = (searchContext) => {
+                    EditorGUILayout.LabelField("Version", AutoSceneSettings.VERSION, EditorStyles.boldLabel);
+                    EditorGUILayout.Space();
 
-            // Build scene list
-            string[] sceneGuids = AssetDatabase.FindAssets("t:Scene");
-            string[] scenePathes = new string[sceneGuids.Length];
-            for (int i = 0; i < sceneGuids.Length; i++) {
-                scenePathes[i] = AssetDatabase.GUIDToAssetPath(sceneGuids[i]);
-            }
-            Array.Sort(scenePathes, string.Compare);
+                    // Build scene list
+                    string[] sceneGuids = AssetDatabase.FindAssets("t:Scene");
+                    string[] scenePathes = new string[sceneGuids.Length];
+                    for (int i = 0; i < sceneGuids.Length; i++) {
+                        scenePathes[i] = AssetDatabase.GUIDToAssetPath(sceneGuids[i]);
+                    }
+                    Array.Sort(scenePathes, string.Compare);
 
-            // Finding selected index
-            string prefsValue = settings.LoadedScene;
-            int selectedIndex = 0;
-            if (prefsValue == "auto") {
-                selectedIndex = 1;
-            }
-            else {
-                int arrayIndex = Array.IndexOf(scenePathes, prefsValue);
-                if (arrayIndex >= 0) {
-                    selectedIndex = arrayIndex + 2;
+                    // Finding selected index
+                    string prefsValue = settings.LoadedScene;
+                    int selectedIndex = 0;
+                    if (prefsValue == "auto") {
+                        selectedIndex = 1;
+                    }
+                    else {
+                        int arrayIndex = Array.IndexOf(scenePathes, prefsValue);
+                        if (arrayIndex >= 0) {
+                            selectedIndex = arrayIndex + 2;
+                        }
+                    }
+
+                    string[] menuEntries = new string[scenePathes.Length + 2];
+                    menuEntries[0] = "None";
+                    menuEntries[1] = "Auto";
+                    Array.Copy(scenePathes, 0, menuEntries, 2, scenePathes.Length);
+
+                    EditorGUI.BeginChangeCheck();
+
+                    bool enabled = settings.Enabled;
+                    enabled = EditorGUILayout.Toggle("Enable AutoScene", enabled);
+                    EditorGUILayout.Space();
+
+                    selectedIndex = EditorGUILayout.Popup("Scene to load on Play", selectedIndex, menuEntries);
+
+                    if (EditorGUI.EndChangeCheck()) {
+                        if (selectedIndex == 0) {
+                            prefsValue = "none";
+                        }
+                        else if (selectedIndex == 1) {
+                            prefsValue = "auto";
+                        }
+                        else {
+                            prefsValue = menuEntries[selectedIndex];
+                        }
+
+                        settings.LoadedScene = prefsValue;
+                        settings.Enabled = enabled;
+                        UpdatePlayModeStartScene();
+                    }
+
+                    string helpBoxMessage;
+                    if (selectedIndex == 0) {
+                        helpBoxMessage = "The scenes currently loaded in the editor will be maintained when entering Play mode.\n\nThis is the default Unity behaviour.";
+                    }
+                    else if (selectedIndex == 1) {
+                        helpBoxMessage = "The first enabled scene in the Build Settings box will be loaded when entering Play mode. If no such scene exists, falls back to 'None'.";
+                    }
+                    else {
+                        helpBoxMessage = string.Format("The scene '{0}' will be loaded when entring Play mode. If the scene does not exist anymore, falls back to 'None'.", prefsValue);
+                    }
+                    EditorGUILayout.Space();
+                    EditorGUILayout.HelpBox(helpBoxMessage, MessageType.Info, true);
+
+                    EditorGUILayout.Space();
+                    EditorGUILayout.LabelField("Made with ❤️ by chsxf");
                 }
-            }
-
-            string[] menuEntries = new string[scenePathes.Length + 2];
-            menuEntries[0] = "None";
-            menuEntries[1] = "Auto";
-            Array.Copy(scenePathes, 0, menuEntries, 2, scenePathes.Length);
-
-            EditorGUI.BeginChangeCheck();
-            
-            bool enabled = settings.Enabled;
-            enabled = EditorGUILayout.Toggle("Enable AutoScene", enabled);
-            EditorGUILayout.Space();
-
-            selectedIndex = EditorGUILayout.Popup("Scene to load on Play", selectedIndex, menuEntries);
-
-            if (EditorGUI.EndChangeCheck()) {
-                if (selectedIndex == 0) {
-                    prefsValue = "none";
-                }
-                else if (selectedIndex == 1) {
-                    prefsValue = "auto";
-                }
-                else {
-                    prefsValue = menuEntries[selectedIndex];
-                }
-
-                settings.LoadedScene = prefsValue;
-                settings.Enabled = enabled;
-                UpdatePlayModeStartScene();
-            }
-
-            string helpBoxMessage;
-            if (selectedIndex == 0) {
-                helpBoxMessage = "The scenes currently loaded in the editor will be maintained when entering Play mode.\n\nThis is the default Unity behaviour.";
-            }
-            else if (selectedIndex == 1) {
-                helpBoxMessage = "The first enabled scene in the Build Settings box will be loaded when entering Play mode. If no such scene exists, falls back to 'None'.";
-            }
-            else {
-                helpBoxMessage = string.Format("The scene '{0}' will be loaded when entring Play mode. If the scene does not exist anymore, falls back to 'None'.", prefsValue);
-            }
-            EditorGUILayout.Space();
-            EditorGUILayout.HelpBox(helpBoxMessage, MessageType.Info, true);
-
-            EditorGUILayout.Space();
-            EditorGUILayout.LabelField("Made with ❤️ by chsxf");
+            };
+            return provider;
         }
     }
 }
