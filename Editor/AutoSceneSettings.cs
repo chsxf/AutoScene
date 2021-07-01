@@ -1,7 +1,7 @@
-using UnityEngine;
-using UnityEditor;
 using System;
 using System.IO;
+using UnityEditor;
+using UnityEngine;
 
 namespace chsxf
 {
@@ -57,7 +57,7 @@ namespace chsxf
 
         public static AutoSceneSettings LoadSettings() {
             string prefs = EditorPrefs.GetString(PrefsKey, null);
-            bool hasKey = string.IsNullOrEmpty(prefs);
+            bool hasKey = !string.IsNullOrEmpty(prefs);
             bool isLegacy = (hasKey && !prefs.StartsWith("{"));
             if (!hasKey || isLegacy) {
                 AutoSceneSettings settings = new AutoSceneSettings();

@@ -1,7 +1,7 @@
-﻿using UnityEditor;
-using UnityEditor.SceneManagement;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using UnityEditor;
+using UnityEditor.SceneManagement;
 
 namespace chsxf
 {
