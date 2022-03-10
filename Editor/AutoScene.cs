@@ -8,6 +8,9 @@ namespace chsxf
     [InitializeOnLoad]
     public static class AutoScene
     {
+        private const string MENUITEM_PREFIX = "Tools/AutoScene (" + AutoSceneSettings.VERSION + ")/";
+        private const string SETTINGS_PROVIDER_PATH = "AutoScene";
+
         private static AutoSceneSettings settings = null;
 
         static AutoScene() {
@@ -37,31 +40,36 @@ namespace chsxf
             EditorSceneManager.playModeStartScene = sceneAsset;
         }
 
-        [MenuItem("Tools/AutoScene (" + AutoSceneSettings.VERSION + ")/Disable")]
+        [MenuItem(MENUITEM_PREFIX + "Open Settings...")]
+        private static void OpenSettings() {
+            SettingsService.OpenUserPreferences(SETTINGS_PROVIDER_PATH);
+        }
+
+        [MenuItem(MENUITEM_PREFIX + "Disable")]
         private static void DisableAutoScene() {
             settings.Enabled = false;
             UpdatePlayModeStartScene();
         }
 
-        [MenuItem("Tools/AutoScene (" + AutoSceneSettings.VERSION + ")/Disable", true)]
+        [MenuItem(MENUITEM_PREFIX + "Disable", true)]
         private static bool CanDisableAutoScene() {
             return settings.Enabled;
         }
 
-        [MenuItem("Tools/AutoScene (" + AutoSceneSettings.VERSION + ")/Enable")]
+        [MenuItem(MENUITEM_PREFIX + "Enable")]
         private static void EnableAutoScene() {
             settings.Enabled = true;
             UpdatePlayModeStartScene();
         }
 
-        [MenuItem("Tools/AutoScene (" + AutoSceneSettings.VERSION + ")/Enable", true)]
+        [MenuItem(MENUITEM_PREFIX + "Enable", true)]
         private static bool CanEnableAutoScene() {
             return !settings.Enabled;
         }
 
         [SettingsProvider]
         public static SettingsProvider AutoSceneSettingsProvider() {
-            SettingsProvider provider = new SettingsProvider("AutoScene", SettingsScope.User) {
+            SettingsProvider provider = new SettingsProvider(SETTINGS_PROVIDER_PATH, SettingsScope.User) {
                 keywords = new HashSet<string>(new[] { "scene", "autoscene", "play mode" }),
 
                 guiHandler = (searchContext) => {
