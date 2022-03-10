@@ -136,8 +136,7 @@ namespace chsxf
                     else {
                         helpBoxMessage = string.Format("The scene '{0}' will be loaded when entring Play mode. If the scene does not exist anymore, falls back to 'None'.", prefsValue);
                     }
-                    EditorGUILayout.Space();
-                    EditorGUILayout.HelpBox(helpBoxMessage, MessageType.Info, true);
+                    EditorGUILayout.HelpBox(helpBoxMessage, MessageType.Info, wide: false);
 
                     EditorGUILayout.Space();
                     EditorGUILayout.LabelField("Made with ❤️ by chsxf");

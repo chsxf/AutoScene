@@ -24,7 +24,7 @@ namespace chsxf
             }
         }
 
-        [SerializeField] private string loadedScene = "none";
+        [SerializeField] private string loadedScene = "auto";
         public string LoadedScene {
             get { return loadedScene; }
             set {
