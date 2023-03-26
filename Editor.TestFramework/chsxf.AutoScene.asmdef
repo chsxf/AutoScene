@@ -1,0 +1,27 @@
+{
+  "name": "chsxf.AutoScene.TestFramework",
+  "rootNamespace": "",
+  "references": [
+    "chsxf.AutoScene",
+    "UnityEditor.TestRunner"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": true,
+  "defineConstraints": [
+    "USE_TEST_FRAMEWORK"
+  ],
+  "versionDefines": [
+    {
+      "name": "com.unity.test-framework",
+      "expression": "1.1",
+      "define": "USE_TEST_FRAMEWORK"
+    }
+  ],
+  "noEngineReferences": false
+}

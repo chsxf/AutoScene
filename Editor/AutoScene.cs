@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEditor.SceneManagement;
+using UnityEngine;
 
 namespace chsxf
 {
@@ -10,8 +11,17 @@ namespace chsxf
     {
         private const string MENUITEM_PREFIX = "Tools/AutoScene (" + AutoSceneSettings.VERSION + ")/";
         private const string SETTINGS_PROVIDER_PATH = "AutoScene";
+        private const string TESTS_RUNNING_SESSION_STATE = "AutoScene.IsRunningTests";
 
-        private static AutoSceneSettings settings = null;
+        private static readonly AutoSceneSettings settings;
+
+        public static bool IsRunningTests {
+            get => SessionState.GetBool(TESTS_RUNNING_SESSION_STATE, false);
+            set {
+                SessionState.SetBool(TESTS_RUNNING_SESSION_STATE, value);
+                UpdatePlayModeStartScene();
+            }
+        }
 
         static AutoScene() {
             settings = AutoSceneSettings.LoadSettings();
@@ -23,7 +33,7 @@ namespace chsxf
         private static void UpdatePlayModeStartScene() {
             SceneAsset sceneAsset = null;
 
-            if (settings.Enabled) {
+            if (settings.Enabled && !IsRunningTests) {
                 if (settings.LoadedScene == "auto") {
                     foreach (EditorBuildSettingsScene scene in EditorBuildSettings.scenes) {
                         if (scene.enabled) {
@@ -69,10 +79,10 @@ namespace chsxf
 
         [SettingsProvider]
         public static SettingsProvider AutoSceneSettingsProvider() {
-            SettingsProvider provider = new SettingsProvider(SETTINGS_PROVIDER_PATH, SettingsScope.User) {
+            SettingsProvider provider = new(SETTINGS_PROVIDER_PATH, SettingsScope.User) {
                 keywords = new HashSet<string>(new[] { "scene", "autoscene", "play mode" }),
 
-                guiHandler = (searchContext) => {
+                guiHandler = searchContext => {
                     EditorGUILayout.LabelField("Version", AutoSceneSettings.VERSION, EditorStyles.boldLabel);
                     EditorGUILayout.Space();
 
@@ -82,6 +92,7 @@ namespace chsxf
                     for (int i = 0; i < sceneGuids.Length; i++) {
                         scenePathes[i] = AssetDatabase.GUIDToAssetPath(sceneGuids[i]);
                     }
+
                     Array.Sort(scenePathes, string.Compare);
 
                     // Finding selected index
@@ -128,15 +139,20 @@ namespace chsxf
 
                     string helpBoxMessage;
                     if (selectedIndex == 0) {
-                        helpBoxMessage = "The scenes currently loaded in the editor will be maintained when entering Play mode.\n\nThis is the default Unity behaviour.";
+                        helpBoxMessage =
+                            "The scenes currently loaded in the editor will be maintained when entering Play mode.\n\nThis is the default Unity behaviour.";
                     }
                     else if (selectedIndex == 1) {
-                        helpBoxMessage = "The first enabled scene in the Build Settings box will be loaded when entering Play mode. If no such scene exists, falls back to 'None'.";
+                        helpBoxMessage =
+                            "The first enabled scene in the Build Settings box will be loaded when entering Play mode. If no such scene exists, falls back to 'None'.";
                     }
                     else {
-                        helpBoxMessage = string.Format("The scene '{0}' will be loaded when entring Play mode. If the scene does not exist anymore, falls back to 'None'.", prefsValue);
+                        helpBoxMessage =
+                            string.Format("The scene '{0}' will be loaded when entring Play mode. If the scene does not exist anymore, falls back to 'None'.",
+                                          prefsValue);
                     }
-                    EditorGUILayout.HelpBox(helpBoxMessage, MessageType.Info, wide: false);
+
+                    EditorGUILayout.HelpBox(helpBoxMessage, MessageType.Info, false);
 
                     EditorGUILayout.Space();
                     EditorGUILayout.LabelField("Made with ❤️ by chsxf");
