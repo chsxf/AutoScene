@@ -13,6 +13,8 @@ namespace chsxf
 
         private static AutoSceneSettings settings = null;
 
+        public static bool IsEnabled => settings.Enabled;
+
         static AutoScene() {
             settings = AutoSceneSettings.LoadSettings();
 
@@ -23,7 +25,7 @@ namespace chsxf
         private static void UpdatePlayModeStartScene() {
             SceneAsset sceneAsset = null;
 
-            if (settings.Enabled) {
+            if (IsEnabled) {
                 if (settings.LoadedScene == "auto") {
                     foreach (EditorBuildSettingsScene scene in EditorBuildSettings.scenes) {
                         if (scene.enabled) {
@@ -46,25 +48,25 @@ namespace chsxf
         }
 
         [MenuItem(MENUITEM_PREFIX + "Disable")]
-        private static void DisableAutoScene() {
+        public static void DisableAutoScene() {
             settings.Enabled = false;
             UpdatePlayModeStartScene();
         }
 
         [MenuItem(MENUITEM_PREFIX + "Disable", true)]
         private static bool CanDisableAutoScene() {
-            return settings.Enabled;
+            return IsEnabled;
         }
 
         [MenuItem(MENUITEM_PREFIX + "Enable")]
-        private static void EnableAutoScene() {
+        public static void EnableAutoScene() {
             settings.Enabled = true;
             UpdatePlayModeStartScene();
         }
 
         [MenuItem(MENUITEM_PREFIX + "Enable", true)]
         private static bool CanEnableAutoScene() {
-            return !settings.Enabled;
+            return !IsEnabled;
         }
 
         [SettingsProvider]

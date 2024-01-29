@@ -8,10 +8,10 @@ namespace chsxf
     [Serializable]
     public class AutoSceneSettings
     {
-        public const string VERSION = "1.2.2";
+        public const string VERSION = "1.3.0";
 
         [SerializeField] private string version = VERSION;
-        public string Version { get { return version; } }
+        public string Version => version;
 
         [SerializeField] private bool enabled = true;
         public bool Enabled {
